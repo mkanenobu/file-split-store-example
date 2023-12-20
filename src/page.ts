@@ -1,15 +1,5 @@
 import { html } from "hono/html";
 
-const DownloadButton = (props: { children: any; id: string }) => {
-  return html`<button
-    onclick="() => {
-    fetch('/files/${props.id}')
-  }"
-  >
-    ${props.children}
-  </button>`;
-};
-
 const fileSizeHumanReadable = (size: number) => {
   const units = ["B", "KB", "MB", "GB", "TB"];
   let i = 0;

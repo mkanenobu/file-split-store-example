@@ -16,17 +16,17 @@ model File {
   fileSize  Int      @map("file_size")
   createdAt DateTime @default(now()) @map("created_at")
 
-  FileFragments FileFragment[]
+  FileBlock FileBlock[]
 
   @@map("files")
 }
 
-model FileFragment {
-  id       String @id @default(uuid())
-  fileId   String @map("file_id")
-  fragment Bytes
-  hash     Bytes
-  index    Int
+model FileBlock {
+  id     String @id @default(uuid())
+  fileId String @map("file_id")
+  block  Bytes
+  hash   Bytes
+  index  Int
 
   File File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 

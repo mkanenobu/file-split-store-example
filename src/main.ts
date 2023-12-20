@@ -31,11 +31,11 @@ app.post("/files", async (c) => {
   const fileName = file.name;
   const fileSize = file.size;
   const content = await file.arrayBuffer();
-  const blocks = splitBufferIntoBlocks(content);
-  const blocksWithHash = blocks.map((block) => {
-    const hash = getHash(block);
-    return { block, hash };
-  });
+
+  const blocks = splitBufferIntoBlocks(content).map((block) => ({
+    block,
+    hash: getHash(block),
+  }));
 
   const fileRecord = await prisma.$transaction(async (tx) => {
     const file = await tx.file.create({
@@ -45,10 +45,10 @@ app.post("/files", async (c) => {
       },
     });
 
-    const tasks = blocksWithHash.map(async ({ block, hash }, i) => {
-      return await tx.fileFragment.create({
+    const tasks = blocks.map(async ({ block, hash }, i) => {
+      return await tx.fileBlock.create({
         data: {
-          fragment: block,
+          block,
           hash,
           index: i,
           fileId: file.id,
@@ -62,6 +62,7 @@ app.post("/files", async (c) => {
 
   return c.json({ ok: true, fileId: fileRecord.id });
 });
+
 app.get("/files/:name", async (c) => {
   const fileName = c.req.param().name;
 
@@ -70,7 +71,7 @@ app.get("/files/:name", async (c) => {
       name: fileName,
     },
     include: {
-      FileFragments: {
+      FileBlock: {
         orderBy: {
           index: "asc",
         },
@@ -86,7 +87,7 @@ app.get("/files/:name", async (c) => {
   }
 
   const content = mergeBlocksIntoBuffer(
-    file.FileFragments.map((fragment) => fragment.fragment),
+    file.FileBlock.map((block) => block.block),
   );
 
   return c.body(content.buffer as ArrayBuffer);
