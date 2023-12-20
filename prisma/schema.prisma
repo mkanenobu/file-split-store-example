@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  fileSize  Int      @map("file_size")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  FileFragments FileFragment[]
+
+  @@map("files")
+}
+
+model FileFragment {
+  id       String @id @default(uuid())
+  fileId   String @map("file_id")
+  fragment Bytes
+  index    Int
+
+  File File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("file_fragments")
+}
