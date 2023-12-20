@@ -25,9 +25,11 @@ model FileFragment {
   id       String @id @default(uuid())
   fileId   String @map("file_id")
   fragment Bytes
+  hash     Bytes
   index    Int
 
   File File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
+  @@index([fileId, index])
   @@map("file_fragments")
 }

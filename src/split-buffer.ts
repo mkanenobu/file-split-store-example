@@ -1,13 +1,14 @@
 // 1MB
 const blockSize = 1024 * 1024;
 
-export const splitBufferIntoBlocks = (buffer: ArrayBuffer): ArrayBuffer[] => {
-  const blocks: ArrayBuffer[] = [];
+export const splitBufferIntoBlocks = (buffer: ArrayBuffer): Buffer[] => {
+  const _buffer = Buffer.from(buffer);
+  const blocks: Buffer[] = [];
   let offset = 0;
-  while (offset < buffer.byteLength) {
-    const block = buffer.slice(
+  while (offset < _buffer.byteLength) {
+    const block = _buffer.slice(
       offset,
-      Math.min(offset + blockSize, buffer.byteLength),
+      Math.min(offset + blockSize, _buffer.byteLength),
     );
     blocks.push(block);
     offset += blockSize;

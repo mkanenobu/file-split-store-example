@@ -6,6 +6,7 @@ import {
   splitBufferIntoBlocks,
 } from "./split-buffer.ts";
 import { prisma } from "./db.ts";
+import { getHash } from "./hash.ts";
 
 const app = new Hono();
 
@@ -31,6 +32,10 @@ app.post("/files", async (c) => {
   const fileSize = file.size;
   const content = await file.arrayBuffer();
   const blocks = splitBufferIntoBlocks(content);
+  const blocksWithHash = blocks.map((block) => {
+    const hash = getHash(block);
+    return { block, hash };
+  });
 
   const fileRecord = await prisma.$transaction(async (tx) => {
     const file = await tx.file.create({
@@ -40,10 +45,11 @@ app.post("/files", async (c) => {
       },
     });
 
-    const tasks = blocks.map(async (block, i) => {
+    const tasks = blocksWithHash.map(async ({ block, hash }, i) => {
       return await tx.fileFragment.create({
         data: {
-          fragment: Buffer.from(block),
+          fragment: block,
+          hash,
           index: i,
           fileId: file.id,
         },
@@ -83,8 +89,7 @@ app.get("/files/:name", async (c) => {
     file.FileFragments.map((fragment) => fragment.fragment),
   );
 
-  return c.body(content);
-  // return c.json({ filename: file.name, content: content.toString("base64") });
+  return c.body(content.buffer as ArrayBuffer);
 });
 
 export default app;
