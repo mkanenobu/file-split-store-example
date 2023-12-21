@@ -13,7 +13,12 @@ const fileSizeHumanReadable = (size: number) => {
 export const Page = ({
   files,
 }: {
-  files: Array<{ id: string; name: string; fileSize: number }>;
+  files: Array<{
+    id: string;
+    name: string;
+    fileSize: number;
+    fileVersion: number;
+  }>;
 }) => {
   return html`
     <html lang="en">
@@ -52,6 +57,10 @@ export const Page = ({
           th {
             border: 1px gray solid;
           }
+          td,
+          th {
+            padding: 0.5rem;
+          }
         </style>
       </head>
       <body>
@@ -66,6 +75,7 @@ export const Page = ({
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th>Version</th>
               <th>File size</th>
               <th>Download</th>
             </tr>
@@ -79,6 +89,7 @@ export const Page = ({
                 html`<tr>
                   <td>${file.id}</td>
                   <td>${file.name}</td>
+                  <td>${file.fileVersion}</td>
                   <td>${fileSizeHumanReadable(file.fileSize)}</td>
                   <td>
                     <button

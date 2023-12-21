@@ -12,24 +12,50 @@ datasource db {
 
 model File {
   id        String   @id @default(uuid())
-  name      String
+  name      String   @unique
   fileSize  Int      @map("file_size")
   createdAt DateTime @default(now()) @map("created_at")
 
-  FileBlock FileBlock[]
+  FileVersion FileVersion[]
 
   @@map("files")
 }
 
+model FileVersion {
+  id        String   @id @default(uuid())
+  version   Int
+  fileId    String   @map("file_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  File             File               @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  FileVersionBlock FileVersionBlock[]
+
+  @@unique([fileId, version])
+  @@map("file_versions")
+}
+
+model FileVersionBlock {
+  id            String   @id @default(uuid())
+  fileVersionId String   @map("file_version_id")
+  fileBlockId   String   @map("file_block_id")
+  fileBlockPos  Int      @map("file_block_pos")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  FileVersion FileVersion @relation(fields: [fileVersionId], references: [id], onDelete: Cascade)
+  FileBlock   FileBlock   @relation(fields: [fileBlockId], references: [id], onDelete: Cascade)
+
+  @@unique([fileVersionId, fileBlockId])
+  @@unique([fileVersionId, fileBlockPos])
+  @@map("file_version_blocks")
+}
+
 model FileBlock {
-  id     String @id @default(uuid())
-  fileId String @map("file_id")
-  block  Bytes
-  hash   Bytes
-  index  Int
+  id    String @id @default(uuid())
+  block Bytes
+  hash  String
 
-  File File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  FileVersionBlock FileVersionBlock[]
 
-  @@index([fileId, index])
-  @@map("file_fragments")
+  @@unique([hash])
+  @@map("file_blocks")
 }
