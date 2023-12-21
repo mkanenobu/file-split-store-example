@@ -6,7 +6,7 @@ export const splitBufferIntoBlocks = (buffer: ArrayBuffer): Buffer[] => {
   const blocks: Buffer[] = [];
   let offset = 0;
   while (offset < _buffer.byteLength) {
-    const block = _buffer.slice(
+    const block = _buffer.subarray(
       offset,
       Math.min(offset + blockSize, _buffer.byteLength),
     );
